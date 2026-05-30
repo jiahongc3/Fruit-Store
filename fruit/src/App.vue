@@ -89,7 +89,8 @@ const handleAddToCart = (fruit: any, quantity: number) => {
   } else {
     cartItems.value.push({ ...fruit, quantity })
   }
-  window.alert(`成功將 ${quantity} 斤「${fruit.name}」加入購物車！`)
+  const unit = fruit.name.includes('禮盒') ? '盒' : '斤'
+  window.alert(`成功將 ${quantity} ${unit}「${fruit.name}」加入購物車！`)
 }
 
 const onUpdateQuantity = (fruitId: string, newQty: number) => {

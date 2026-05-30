@@ -72,7 +72,7 @@ const goToLogin = () => router.push('/login')
           <input 
             v-model="searchQuery" 
             type="text" 
-            placeholder="搜尋果物名稱..." 
+            placeholder="搜尋水果名稱..." 
             class="elegant-search-input" 
           />
         </div>
