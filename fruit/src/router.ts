@@ -12,7 +12,14 @@ const routes = [
   {
     path: '/login',
     name: 'login',
-    component: LoginView
+    component: LoginView,
+    props: { initialMode: 'login' }
+  },
+  {
+    path: '/register',
+    name: 'register',
+    component: LoginView,
+    props: { initialMode: 'register' }
   },
   {
     path: '/cart',

@@ -3,6 +3,10 @@ import { ref, inject } from 'vue'
 import { useRouter } from 'vue-router'
 import { API_BASE } from '../config'
 
+const props = defineProps<{
+  initialMode?: 'login' | 'register'
+}>()
+
 const router = useRouter()
 const globalState = inject<any>('globalState')
 if (!globalState) {
@@ -10,7 +14,12 @@ if (!globalState) {
 }
 const { handleLoginSuccess } = globalState
 
-const isLoginMode = ref<boolean>(true)
+const isLoginMode = ref<boolean>(props.initialMode !== 'register')
+
+const toggleMode = () => {
+  isLoginMode.value = !isLoginMode.value
+  router.push(isLoginMode.value ? '/login' : '/register')
+}
 const username = ref<string>('')
 const password = ref<string>('')
 const confirmPassword = ref<string>('')
@@ -109,7 +118,7 @@ const goBack = () => router.push('/')
           <div class="button-group">
             <button v-if="isLoginMode" @click="handleLogin" class="action-btn btn-green">登入系統</button>
             <button v-else @click="handleRegister" class="action-btn btn-emerald">建立新帳號</button>
-            <button @click="isLoginMode = !isLoginMode" class="action-btn btn-text">
+            <button @click="toggleMode" class="action-btn btn-text">
               {{ isLoginMode ? '還沒有帳號？立即註冊' : '已有帳號？返回登入' }}
             </button>
           </div>
