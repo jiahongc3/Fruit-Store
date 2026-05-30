@@ -1,34 +1,35 @@
 <script setup lang="ts">
-import { computed, ref, watchEffect } from 'vue'
-
-const API_BASE = import.meta.env.VITE_API_BASE || 'https://fruit-store-2nso.onrender.com/api'
+import { computed, ref, watchEffect, inject } from 'vue'
+import { useRouter } from 'vue-router'
+import { API_BASE } from '../config'
 
 const props = defineProps<{
-  viewMode: string, 
-  cartItems: any[],
-  currentUser: any
+  viewMode: string
 }>()
 
-// 確保這裡有傳遞 'update-quantity' 事件給外層的 App.vue
-const emit = defineEmits(['go-back', 'go-to-checkout', 'update-quantity', 'checkout-success'])
+const router = useRouter()
+const globalState = inject<any>('globalState')
+if (!globalState) {
+  throw new Error('globalState not found')
+}
 
-// 收件單據狀態
+const {
+  currentUser,
+  cartItems,
+  onUpdateQuantity,
+  onCheckoutSuccess
+} = globalState
+
 const recipientName = ref('')
 const phone = ref('')
 const address = ref('')
-
-// 付款方式狀態，預設為 'cod' (貨到付款)
 const paymentMethod = ref('cod')
 
-// 自動預填登入會員資料（安全修正版）
 watchEffect(() => {
-  if (props.currentUser && typeof props.currentUser === 'object') {
-    // 優先使用新結構的「會員名稱 (username)」作為預設收件人
-    recipientName.value = props.currentUser.username || '新會員'
-    
-    // 如果後端本來就已經有記錄過結帳後的電話與地址，就自動抓過來預填
-    phone.value = props.currentUser.phone || ''
-    address.value = props.currentUser.address || ''
+  if (currentUser.value && typeof currentUser.value === 'object') {
+    recipientName.value = currentUser.value.username || '新會員'
+    phone.value = currentUser.value.phone || ''
+    address.value = currentUser.value.address || ''
   } else {
     recipientName.value = ''
     phone.value = ''
@@ -37,28 +38,25 @@ watchEffect(() => {
 })
 
 const totalPrice = computed(() => {
-  return props.cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+  return cartItems.value.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0)
 })
 
 const totalQuantity = computed(() => {
-  return props.cartItems.reduce((sum, item) => sum + item.quantity, 0)
+  return cartItems.value.reduce((sum: number, item: any) => sum + item.quantity, 0)
 })
 
-// 加減按鈕的核心處理邏輯
 const handleQtyChange = (fruitId: string, currentQty: number, delta: number) => {
   const newQty = currentQty + delta
-  
   if (newQty <= 0) {
     const confirmDelete = window.confirm('確認要將此水果從購物籃中完全移除嗎？')
     if (confirmDelete) {
-      emit('update-quantity', fruitId, 0) // 通知 App.vue 刪除商品
+      onUpdateQuantity(fruitId, 0)
     }
   } else {
-    emit('update-quantity', fruitId, newQty) // 通知 App.vue 更新數量
+    onUpdateQuantity(fruitId, newQty)
   }
 }
 
-// 實作串接送出訂單
 const handleFinalSubmit = async () => {
   if (!recipientName.value || !phone.value || !address.value) {
     return window.alert('請完整填寫收件資訊！')
@@ -76,8 +74,8 @@ const handleFinalSubmit = async () => {
 
   try {
     const payload = {
-      username: props.currentUser?.account || 'guest',
-      cartItems: props.cartItems.map(item => ({
+      username: currentUser.value?.account || 'guest',
+      cartItems: cartItems.value.map((item: any) => ({
         fruit_id: item.fruit_id,
         quantity: item.quantity
       })),
@@ -96,7 +94,7 @@ const handleFinalSubmit = async () => {
     const result = await response.json()
     if (response.ok && result.success) {
       window.alert(`下單成功！訂單編號：${result.orderId}\n應付總額為 NT$ ${result.totalPrice}\n付款方式：貨到付款`)
-      emit('checkout-success')
+      onCheckoutSuccess()
     } else {
       window.alert(result.message || '訂單建立失敗')
     }
@@ -105,21 +103,22 @@ const handleFinalSubmit = async () => {
   }
 }
 
-// 🚀 前往結帳前的檢查
 const handleGoToCheckout = () => {
-  if (!props.currentUser) {
+  if (!currentUser.value) {
     window.alert('請先登入或註冊會員，才能進行結帳喔！')
+    router.push('/login')
     return
   }
   
-  // ✨ 修改：只在點擊「前往結帳」時，判斷若購物車空了才跳警訊
-  if (props.cartItems.length === 0) {
+  if (cartItems.value.length === 0) {
     window.alert('您的購物籃是空的，請先挑選喜愛的水果再前去結帳！')
     return
   }
   
-  emit('go-to-checkout')
+  router.push('/checkout')
 }
+
+const goBack = () => router.push('/')
 </script>
 
 <template>
@@ -127,7 +126,7 @@ const handleGoToCheckout = () => {
     <div class="fullscreen-bg"></div>
     
     <div class="process-container">
-      <button class="back-nav-btn" @click="$emit('go-back')">
+      <button class="back-nav-btn" @click="goBack">
         <span class="arrow">←</span> 上一頁
       </button>
 

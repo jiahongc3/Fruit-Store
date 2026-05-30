@@ -1,20 +1,21 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, inject } from 'vue'
+import { useRouter } from 'vue-router'
 import type { Fruit } from '../types'
 
-const props = defineProps<{ 
-  fruits: Fruit[],
-  currentUser: any,
-  // 接收從外層傳進來的購物車陣列
-  cartItems: any[] 
-}>()
+const router = useRouter()
+const globalState = inject<any>('globalState')
+if (!globalState) {
+  throw new Error('globalState not found')
+}
 
-const emit = defineEmits<{
-  (e: 'add-to-cart', fruit: Fruit, quantity: number): void
-  (e: 'go-to-cart'): void
-  (e: 'go-to-login'): void 
-  (e: 'logout'): void 
-}>()
+const {
+  fruits,
+  currentUser,
+  cartItems,
+  handleLogout,
+  handleAddToCart: addToCartGlobal
+} = globalState
 
 const activeCategory = ref<string>('當季主打')
 const searchQuery = ref<string>('')
@@ -32,29 +33,30 @@ const changeQuantity = (id: string, delta: number) => {
 }
 
 const filteredFruits = computed(() => {
-  return props.fruits.filter(f => {
+  return fruits.value.filter((f: Fruit) => {
     const matchCat = f.category === activeCategory.value
     const matchSearch = f.name.includes(searchQuery.value) || f.origin.includes(searchQuery.value)
     return matchCat && matchSearch
   })
 })
 
-const handleAddToCart = (fruit: Fruit) => {
+const handleAddToCartLocal = (fruit: Fruit) => {
   const qty = getQuantity(fruit.fruit_id)
-  emit('add-to-cart', fruit, qty)
+  addToCartGlobal(fruit, qty)
   quantities.value[fruit.fruit_id] = 1
 }
 
-// 即時計算目前購物車內所有水果的總件數
 const totalCartQuantity = computed(() => {
-  if (!props.cartItems) return 0
-  return props.cartItems.reduce((sum, item) => sum + item.quantity, 0)
+  if (!cartItems.value) return 0
+  return cartItems.value.reduce((sum: number, item: any) => sum + item.quantity, 0)
 })
+
+const goToCart = () => router.push('/cart')
+const goToLogin = () => router.push('/login')
 </script>
 
 <template>
   <div class="luxury-store-wrapper">
-    
     <header class="glass-header">
       <div class="header-brand">
         <span class="brand-emoji">🍊</span>
@@ -75,7 +77,7 @@ const totalCartQuantity = computed(() => {
           />
         </div>
 
-        <button class="pill-cart-badge" @click="$emit('go-to-cart')">
+        <button class="pill-cart-badge" @click="goToCart">
           <div class="cart-icon-wrapper">
             <span class="cart-icon">🛒</span>
             <span v-if="totalCartQuantity > 0" class="cart-count-badge">{{ totalCartQuantity }}</span>
@@ -84,12 +86,12 @@ const totalCartQuantity = computed(() => {
         </button>
 
         <div class="member-action-block">
-          <button v-if="!currentUser" class="pill-login-btn" @click="$emit('go-to-login')">
+          <button v-if="!currentUser" class="pill-login-btn" @click="goToLogin">
             <span class="user-icon">👤</span> 登入/註冊
           </button>
           
           <div v-else class="user-logged-box">
-            <button class="logout-text-btn" @click="$emit('logout')">登出</button>
+            <button class="logout-text-btn" @click="handleLogout">登出</button>
             <span class="user-welcome">你好，{{ currentUser.username || '新會員' }}🌷</span>
           </div>
         </div>
@@ -148,7 +150,7 @@ const totalCartQuantity = computed(() => {
               <button class="qty-btn" @click="changeQuantity(fruit.fruit_id, 1)">➕</button>
             </div>
 
-            <button @click="handleAddToCart(fruit)" class="minimal-add-cart-btn">
+            <button @click="handleAddToCartLocal(fruit)" class="minimal-add-cart-btn">
               <span>加入購物車</span>
             </button>
           </div>
@@ -165,7 +167,6 @@ const totalCartQuantity = computed(() => {
 </template>
 
 <style scoped>
-/*  核心修改：購物車按鈕與漂浮徽章的 CSS 樣式 */
 .pill-cart-badge {
   background: #1c1917; 
   border: none; 
@@ -182,7 +183,6 @@ const totalCartQuantity = computed(() => {
 }
 .pill-cart-badge:hover { background: #3f3f46; }
 
-/*  新增：用來做定位基準的圖示包裹外盒 */
 .cart-icon-wrapper {
   position: relative;
   display: inline-flex;
@@ -194,13 +194,12 @@ const totalCartQuantity = computed(() => {
   font-size: 16px;
 }
 
-/*  修改：將徽章改為絕對定位，使其像照片上一樣掛在右上角 */
 .cart-count-badge {
   position: absolute;
-  top: -8px;       /* 往上飄移 */
-  right: -10px;    /* 往右外側貼齊 */
-  background-color: #ffffff; /*  改為照片中的白底 */
-  color: hsl(0, 0%, 0%);            /*  改為與照片外層色調呼應的橘/紅色字 */
+  top: -8px;
+  right: -10px;
+  background-color: #ffffff;
+  color: hsl(0, 0%, 0%);
   font-size: 10px;
   font-weight: 800;
   min-width: 16px;
@@ -210,11 +209,10 @@ const totalCartQuantity = computed(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2); /* 讓白色小圈圈更有立體感 */
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
   border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
-/* 以下原有樣式不變 */
 .member-action-block { display: flex; align-items: center; }
 .pill-login-btn { background: transparent; border: 1.5px solid #1c1917; padding: 10px 20px; border-radius: 40px; color: #1c1917; display: flex; align-items: center; gap: 6px; cursor: pointer; font-weight: 600; font-size: 13px; transition: all 0.2s ease; }
 .pill-login-btn:hover { background: #1c1917; color: #ffffff; }

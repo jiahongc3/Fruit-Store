@@ -1,18 +1,19 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, inject } from 'vue'
+import { useRouter } from 'vue-router'
+import { API_BASE } from '../config'
 
-const API_BASE = import.meta.env.VITE_API_BASE || 'https://fruit-store-2nso.onrender.com/api'
-
-const emit = defineEmits<{
-  (e: 'login-success', user: any): void
-  (e: 'go-back'): void
-}>()
+const router = useRouter()
+const globalState = inject<any>('globalState')
+if (!globalState) {
+  throw new Error('globalState not found')
+}
+const { handleLoginSuccess } = globalState
 
 const isLoginMode = ref<boolean>(true)
 const username = ref<string>('')
 const password = ref<string>('')
 const confirmPassword = ref<string>('')
-// 🚀 新增：會員名稱狀態
 const nickname = ref<string>('')
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -29,7 +30,7 @@ const handleLogin = async () => {
     })
     const result = await response.json()
     if (response.ok && result.success) {
-      emit('login-success', result.user)
+      handleLoginSuccess(result.user)
     } else {
       window.alert(result.message || '帳號或密碼錯誤！')
     }
@@ -39,26 +40,20 @@ const handleLogin = async () => {
 }
 
 const handleRegister = async () => {
-  // 1. 確保所有欄位都有填寫
   if (!username.value || !password.value || !confirmPassword.value || !nickname.value) {
     return window.alert('所有欄位皆為必填！')
   }
   
-  // 2. 驗證帳號格式 (Email)
   if (!emailRegex.test(username.value)) return window.alert('帳號必須是有效的電子郵件地址！')
   
-  // 🚀 3. 新增：驗證會員名稱格式 (只能是 2 到 4 個中文字)
-  // ^[\u4e00-\u9fa5] 代表必須是中文字，{2,4}$ 代表長度嚴格限制在 2 到 4 個字
   const nicknameRegex = /^[\u4e00-\u9fa5]{2,4}$/
   if (!nicknameRegex.test(nickname.value)) {
     return window.alert('會員名稱格式不正確！請輸入 2 至 4 個字的中文字，不能包含英文或數字。')
   }
   
-  // 4. 驗證密碼強度 (至少 8 個字，且包含英文與數字)
   const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/
   if (!passwordRegex.test(password.value)) return window.alert('密碼必須至少 8 個字，且必須包含英文與數字！')
   
-  // 5. 檢查兩次密碼是否一致
   if (password.value !== confirmPassword.value) return window.alert('兩次輸入的密碼不一致！')
 
   try {
@@ -68,7 +63,7 @@ const handleRegister = async () => {
       body: JSON.stringify({ 
         username: username.value, 
         password: password.value,
-        nickname: nickname.value // 🚀 傳送會員名稱給後端
+        nickname: nickname.value
       })
     })
     const result = await response.json()
@@ -85,6 +80,8 @@ const handleRegister = async () => {
     window.alert('與後端通訊時發生錯誤')
   }
 }
+
+const goBack = () => router.push('/')
 </script>
 
 <template>
@@ -96,7 +93,7 @@ const handleRegister = async () => {
         <h1 class="brand-title">線上水果行 <span class="brand-sub">(Online Fruit Shop)</span></h1>
       </div>
 
-      <button class="login-back-btn" @click="$emit('go-back')">
+      <button class="login-back-btn" @click="goBack">
         <span class="arrow">←</span> 上一頁
       </button>
 
