@@ -5,7 +5,7 @@ import FruitStore from './components/FruitStore.vue'
 import CartAndCheckout from './components/CartAndCheckout.vue'
 import LoginView from './components/LoginView.vue'
 
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://127.0.0.1:5000/api'
+const API_BASE = import.meta.env.VITE_API_BASE || 'https://fruit-store-2nso.onrender.com/api'
 
 const currentView = ref<string>('store')
 const fruits = ref<Fruit[]>([])

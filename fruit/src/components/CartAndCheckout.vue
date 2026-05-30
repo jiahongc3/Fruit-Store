@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watchEffect } from 'vue'
 
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://127.0.0.1:5000/api'
+const API_BASE = import.meta.env.VITE_API_BASE || 'https://fruit-store-2nso.onrender.com/api'
 
 const props = defineProps<{
   viewMode: string, 
