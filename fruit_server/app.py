@@ -73,8 +73,12 @@ def init_db():
         ("M006", "香蕉", "當季主打", 45, "斤", "屏東萬巒", "https://images.unsplash.com/photo-1528825871115-3581a5387919?w=500"), # 🌟 已修改
         ("L001", "愛文芒果", "在地小農", 120, "斤", "屏東枋山", "https://images.unsplash.com/photo-1553279768-865429fa0078?w=500"),
         ("L002", "荔枝(去枝葉)", "在地小農", 180, "斤", "高雄大樹", "https://shoplineimg.com/61efa511d8ebda00312cdc21/644fdc66e555d5001d11af46/800x.jpg?"),
-        ("L003", "山蕉", "在地小農", 55, "斤", "南投集集", "https://images.unsplash.com/photo-1528825871115-3581a5387919?w=500")  # 🌟 已修改
-    ]
+        ("L003", "山蕉", "在地小農", 55, "斤", "南投集集", "https://images.unsplash.com/photo-1528825871115-3581a5387919?w=500"),
+        ("I001", "蘋果禮盒 (8顆裝)", "進口水果", 880, "盒", "日本青森", "https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=400"),
+        ("I002", "櫻桃禮盒 (2斤裝)", "進口水果", 1200, "盒", "美國加州", "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSUVpsH1JAqrc8MpMEvyFK45loW1psJGmQZGA&s"),
+        ("I003", "榴槤禮盒 (1入裝)", "進口水果", 950, "盒", "越南湄公河三角洲", "https://d3h1lg3ksw6i6b.cloudfront.net/media/image/2018/06/27/220553958812453b954ab1af0b121c5c_shutterstock_289325978.jpg"),
+        ("I004", "奇異果禮盒 (12顆裝)", "進口水果", 650, "盒", "紐西蘭豐盛灣", "https://www.ttvc.com.tw/data/images/11402/dreamstime_s_319885862.jpg")
+        ]
     
     # 🌟 注意：由於先前已經建立過資料表，INSERT OR IGNORE 會跳過重複的主鍵。
     # 為了讓名稱修改順利套用，這裡改用 REPLACE 以直接覆蓋舊的商品資料
