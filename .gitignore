@@ -15,3 +15,7 @@ fruit_server/.env
 .DS_Store
 Thumbs.db
 *.log
+
+# Project Documentation (Local only)
+專題簡報大綱.md
+DW期末報告樣式.pdf
