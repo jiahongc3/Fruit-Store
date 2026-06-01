@@ -162,6 +162,7 @@ const goBack = () => router.push('/')
 
       <div v-if="viewMode === 'checkout'" class="content-card">
         <h2 class="section-title">結帳資料確認</h2>
+
         <div class="checkout-form">
           <div class="form-group">
             <label>收件人姓名</label>
@@ -174,6 +175,18 @@ const goBack = () => router.push('/')
           <div class="form-group">
             <label>送貨地址</label>
             <input v-model="address" type="text" placeholder="請輸入詳細地址" class="form-input" />
+          </div>
+
+          <!-- 商品明細摘要 -->
+          <div class="checkout-summary-section">
+            <div class="summary-header">訂單明細</div>
+            <div class="summary-items-list">
+              <div v-for="item in cartItems" :key="item.fruit_id" class="summary-item">
+                <span class="sum-name">{{ item.name }}</span>
+                <span class="sum-qty">x {{ item.quantity }} {{ item.unit }}</span>
+                <span class="sum-subtotal">NT$ {{ item.price * item.quantity }}</span>
+              </div>
+            </div>
           </div>
 
           <div class="checkout-footer-row">
@@ -234,4 +247,35 @@ const goBack = () => router.push('/')
 .payment-btn.is-active { background: #fff7ed; border-color: #ff8a3d; color: #ff8a3d; box-shadow: 0 4px 12px rgba(255, 138, 61, 0.08); }
 .payment-btn .icon { font-size: 16px; }
 .inline-summary { margin: 0; text-align: right; flex: 1; padding-bottom: 10px; }
+
+/* 結帳明細樣式 */
+.checkout-summary-section {
+  background: #fdfaf7;
+  border: 1px solid #fed7aa;
+  border-radius: 12px;
+  padding: 15px;
+  margin-bottom: 20px;
+}
+.summary-header {
+  font-size: 14px;
+  font-weight: 700;
+  color: #c2410c;
+  margin-bottom: 10px;
+  border-bottom: 1px dashed #fed7aa;
+  padding-bottom: 5px;
+}
+.summary-items-list {
+  max-height: 150px;
+  overflow-y: auto;
+}
+.summary-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  margin-bottom: 8px;
+  color: #44403c;
+}
+.sum-name { flex: 2; }
+.sum-qty { flex: 1; text-align: center; color: #78716c; font-size: 13px; }
+.sum-subtotal { flex: 1; text-align: right; font-weight: 600; }
 </style>
