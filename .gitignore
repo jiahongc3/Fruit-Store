@@ -7,7 +7,6 @@ fruit/.env.local
 # Backend
 fruit_server/venv/
 fruit_server/__pycache__/
-fruit_server/*.db
 fruit_server/.env
 
 # OS & VS Code
